@@ -1,6 +1,7 @@
 package com.springboot.blog.controller;
 
 
+import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +17,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.springboot.blog.configuration.JwtTokenProvider;
+import com.springboot.blog.dto.JwtAuthResponseDTO;
 import com.springboot.blog.dto.LoginDTO;
 import com.springboot.blog.dto.RegisterUserDTO;
 import com.springboot.blog.model.Role;
 import com.springboot.blog.model.User;
 import com.springboot.blog.repository.IRoleRepository;
 import com.springboot.blog.repository.IUserRepository;
+
+import io.jsonwebtoken.security.InvalidKeyException;
 
 @RestController
 @RequestMapping("/blog/post/auth")
@@ -39,14 +44,21 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
     @PostMapping("/login")
-    public ResponseEntity<String> authenticateUser(@RequestBody LoginDTO loginDTO){
+    public ResponseEntity<JwtAuthResponseDTO> authenticateUser(@RequestBody LoginDTO loginDTO) throws InvalidKeyException, UnsupportedEncodingException{
 
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDTO.getUsernameOrEmail(), loginDTO.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        return new ResponseEntity<>("login success", HttpStatus.OK);
+        String token = jwtTokenProvider.generateToken(authentication);
+
+        // return new ResponseEntity<>("login success", HttpStatus.OK);
+
+        return ResponseEntity.ok(new JwtAuthResponseDTO(token));
     }
 
     @PostMapping("/registerUser")
