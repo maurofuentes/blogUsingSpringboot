@@ -3,6 +3,7 @@ package com.springboot.blog.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -23,10 +24,27 @@ public class WebSecurityConfig {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
+    // @Bean
+    // SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+    //     return http.csrf().disable()
+    //             .authorizeRequests()
+    //             .anyRequest()
+    //             .authenticated()
+    //             .and()
+    //             .httpBasic()
+    //             .and()
+    //             .sessionManagement()
+    //             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+    //             .and()
+    //             .build();
+    // }
+
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         return http.csrf().disable()
                 .authorizeRequests()
+                .antMatchers(HttpMethod.GET, "/blog/post/**").permitAll()
+                .antMatchers("/blog/post/auth/**").permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
